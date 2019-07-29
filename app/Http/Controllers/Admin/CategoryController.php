@@ -141,19 +141,24 @@ class CategoryController extends Controller
 //            make unique name for image
             $currentDate = Carbon::now()->toDateString();
             $imagename = $slug.'-'.$currentDate.'-'.uniqid().'.'.$image->getClientOriginalExtension();
+
 //            check category dir is exists
             if (!Storage::disk('public')->exists('category'))
             {
                 Storage::disk('public')->makeDirectory('category');
             }
+
 //            delete old image
             if (Storage::disk('public')->exists('category/'.$category->image))
             {
                 Storage::disk('public')->delete('category/'.$category->image);
             }
+
+
 //            resize image for category and upload
             $categoryimage = Image::make($image)->resize(1600,479)->stream();
             Storage::disk('public')->put('category/'.$imagename,$categoryimage);
+
             //            check category slider dir is exists
             if (!Storage::disk('public')->exists('category/slider'))
             {
@@ -186,6 +191,21 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $category = Category::find($id);
+        if (Storage::disk('public')->exists('category/'.$category->image))
+        {
+            Storage::disk('public')->delete('category/'.$category->image);
+        }
+
+        if (Storage::disk('public')->exists('category/slider/'.$category->image))
+        {
+            Storage::disk('public')->delete('category/slider/'.$category->image);
+        }
+
+        $category->delete();
+        Toastr::success('Category Successfully Deleted :)', 'Success');
+        return redirect()->back();
+
+
     }
 }
